@@ -22,6 +22,7 @@ _mock_modules = {
     "aiogram": MagicMock(),
     "aiogram.types": MagicMock(),
     "aiogram.exceptions": MagicMock(),
+    "aiogram.filters": MagicMock(),
 }
 for _name, _mod in _mock_modules.items():
     if _name not in sys.modules:
@@ -46,6 +47,13 @@ class _InlineKeyboardMarkup:
 
 sys.modules["aiogram.types"].InlineKeyboardButton = _InlineKeyboardButton
 sys.modules["aiogram.types"].InlineKeyboardMarkup = _InlineKeyboardMarkup
+
+# Real exception class so tests can raise/catch it
+from aiogram.exceptions import TelegramAPIError
+if isinstance(TelegramAPIError, MagicMock):
+    class _TelegramAPIError(Exception):
+        pass
+    sys.modules["aiogram.exceptions"].TelegramAPIError = _TelegramAPIError
 
 
 
