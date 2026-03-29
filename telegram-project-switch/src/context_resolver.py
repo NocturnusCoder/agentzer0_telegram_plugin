@@ -8,7 +8,7 @@ from plugins._telegram_integration.helpers.bot_manager import get_all_bots
 from plugins._telegram_integration.helpers.constants import STATE_FILE
 from helpers import files
 from agent import AgentContext
-from aiogram import Message
+from aiogram.types import Message
 
 _log = logging.getLogger(__name__)
 
