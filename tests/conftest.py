@@ -33,6 +33,22 @@ sys.modules["plugins._telegram_integration.helpers.constants"].STATE_FILE = "dat
 # Make aiogram.Message a real class so isinstance checks work in tests
 sys.modules["aiogram"].Message = MagicMock
 
+# Concrete stubs for aiogram types used by keyboard_builder tests
+class _InlineKeyboardButton:
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+class _InlineKeyboardMarkup:
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+sys.modules["aiogram.types"].InlineKeyboardButton = _InlineKeyboardButton
+sys.modules["aiogram.types"].InlineKeyboardMarkup = _InlineKeyboardMarkup
+
+
+
 
 
 @pytest.fixture
