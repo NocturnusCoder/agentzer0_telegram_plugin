@@ -1,0 +1,7 @@
+name: _telegram_project_switch
+title: Telegram Project Switch
+description: Adds /project command to Telegram bots for dynamic project switching
+version: 1.1.0
+settings_sections: []
+per_project_config: false
+per_agent_config: false
