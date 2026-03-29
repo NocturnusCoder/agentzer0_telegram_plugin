@@ -1,48 +1,52 @@
-# Telegram Project Switch Plugin
+# Telegram Project Switch
 
-An **Agent Zero** plugin that adds a `/project` command to Telegram bots for dynamic project switching.
+Adds a `/project` command to Agent Zero Telegram bots for dynamic project switching within a chat session.
 
 ## Features
 
-- `/project` — shows inline keyboard with available projects
-- `/project <name>` — switch to a project directly via text
-- Inline keyboard buttons with current project marked ✅
-- Conversation auto-clears on project switch
-- Idempotent bot registration with restart detection (token-based)
-- Stale/expired session detection
-- Handles Telegram's 64-byte `callback_data` limit gracefully
-- Robust error handling — no internal details leaked to users
+- `/project` — show current project and inline keyboard with all available projects
+- `/project <name>` — switch to a project by name
+- Inline keyboard buttons for quick switching
+- Works with multiple bots, group chats, and private chats
+- Project persists through `/clear` commands
+
+## Architecture
+
+```
+telegram_project_switch/
+├── plugin.yaml
+├── README.md
+├── extensions/
+│   └── python/
+│       └── job_loop/
+│           └── _15_register_project_command.py  # Extension entry point
+└── src/
+    ├── constants.py         # Magic strings and callback prefixes
+    ├── context_resolver.py  # AgentContext lookup from Telegram chat
+    ├── project_switcher.py  # Business logic for switching projects
+    ├── keyboard_builder.py  # Inline keyboard construction
+    └── handlers.py          # aiogram command/callback handlers
+```
+
+Each module has one responsibility and can be tested independently.
 
 ## Requirements
 
-- [Agent Zero](https://github.com/frdel/agent-zero) framework
-- [_telegram_integration](https://github.com/frdel/agent-zero) plugin (built-in Telegram bot) — **must be enabled first**
+- Agent Zero with the built-in `_telegram_integration` plugin enabled
+- At least one Telegram bot configured
 
 ## Installation
 
-1. Copy `telegram_project_switch/` into your Agent Zero `usr/plugins/` directory:
-   ```bash
-   cp -r telegram_project_switch/ /path/to/agent-zero/usr/plugins/_telegram_project_switch/
-   ```
-2. Enable the plugin by creating the toggle file:
-   ```bash
-   touch /path/to/agent-zero/usr/plugins/_telegram_project_switch/.toggle-1
-   ```
-3. Restart Agent Zero.
+1. Copy `telegram_project_switch/` to `/a0/usr/plugins/_telegram_project_switch/`
+2. Enable the plugin in Agent Zero settings
+3. Restart the Agent Zero server
 
-## Usage
+## Testing
 
-- Send `/project` to see available projects as buttons
-- Tap a button or send `/project <name>` to switch
-- Current project is marked with ✅ in the list
-- Conversation history is cleared on switch for a fresh context
+```bash
+pytest tests/
+```
 
-## How It Works
+## Version
 
-The plugin registers an aiogram `Router` on existing Telegram bot instances managed by the `_telegram_integration` plugin. It uses the framework's `STATE_FILE` constant and `files.get_abs_path()` for reliable state.json lookup, then calls `projects.activate_project()` to switch and `ctx.reset()` to clear the conversation.
-
-The router is inserted at position 0 in the dispatcher's sub-routers, ensuring the `/project` command handler runs **before** the telegram plugin's catch-all `on_message` handler.
-
-## ⚠️ Limitations
-
-- **Restart persistence:** Dynamic project choices do **not** survive server restarts. After a restart, the user falls back to the `user_projects` or `default_project` configured in the Telegram integration settings. To make a project assignment permanent, configure it in the Telegram plugin's GUI under 
+v1.2.0 — Modular refactor with unit tests
