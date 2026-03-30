@@ -84,7 +84,7 @@ async def handle_project_callback(callback: CallbackQuery):
             return
 
         message = callback.message
-        result = resolve_context(message)
+        result = resolve_context(message, user_override=callback.from_user)
         if result.status != "ok":
             await _reject_context_callback(callback, result)
             return

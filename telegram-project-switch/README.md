@@ -47,6 +47,12 @@ Each module has one responsibility and can be tested independently.
 pytest tests/
 ```
 
-## Version
+## Changelog
 
-v1.2.0 — Modular refactor with unit tests
+### v1.2.1 — Fix inline keyboard callbacks in group chats
+- Fixed "Send a regular message first to start a session" error when clicking project switch buttons in group chats
+- Root cause: callback handler used `callback.message.from_user` (the bot) instead of `callback.from_user` (the human who clicked) for state.json key lookup
+- Added `user_override` parameter to `resolve_context()` for callback scenarios
+- Added 3 regression tests with realistic mock separation (bot vs user identity)
+
+### v1.2.0 — Modular refactor with unit tests

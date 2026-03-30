@@ -56,18 +56,19 @@ def get_context_for_chat(
     return ctx, False
 
 
-def resolve_context(message: Message) -> ContextResult:
+def resolve_context(message: Message, user_override=None) -> ContextResult:
     bot_name = resolve_bot_name(message)
     if not bot_name:
         return ContextResult(None, "bot_unknown")
 
-    _log.debug("Resolving context for chat %s:%s:%s", bot_name, message.from_user.id, message.chat.id)
+    user = user_override if user_override else message.from_user
+    _log.debug("Resolving context for chat %s:%s:%s", bot_name, user.id, message.chat.id)
 
-    ctx, was_stale = get_context_for_chat(bot_name, message.from_user.id, message.chat.id)
+    ctx, was_stale = get_context_for_chat(bot_name, user.id, message.chat.id)
     if was_stale:
-        _log.info("Session expired for user %s in chat %s", message.from_user.id, message.chat.id)
+        _log.info("Session expired for user %s in chat %s", user.id, message.chat.id)
         return ContextResult(None, "expired", bot_name)
     if ctx is None:
-        _log.debug("No session found for user %s in chat %s", message.from_user.id, message.chat.id)
+        _log.debug("No session found for user %s in chat %s", user.id, message.chat.id)
         return ContextResult(None, "no_session", bot_name)
     return ContextResult(ctx, "ok", bot_name)

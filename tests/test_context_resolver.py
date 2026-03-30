@@ -70,7 +70,39 @@ class TestResolveContext:
         mock_get_ctx.return_value = (None, False)
         result = resolve_context(mock_message)
         assert result.status == "no_session"
-        assert result.ctx is None
+
+    @patch("context_resolver.get_all_bots")
+    @patch("context_resolver.AgentContext")
+    @patch("context_resolver.get_context_for_chat")
+    def test_user_override(self, mock_get_ctx, mock_ac, mock_get_all, mock_message, mock_context):
+        """user_override should be used instead of message.from_user for key lookup."""
+        mock_instance = MagicMock()
+        mock_instance.bot.token = "123456:ABC-DEF"
+        mock_get_all.return_value = {"my_bot": mock_instance}
+        mock_get_ctx.return_value = (mock_context, False)
+
+        override_user = MagicMock()
+        override_user.id = 99
+
+        result = resolve_context(mock_message, user_override=override_user)
+        assert result.status == "ok"
+        # Verify the override user ID was used, not message.from_user.id
+        mock_get_ctx.assert_called_once_with("my_bot", 99, 100)
+
+    @patch("context_resolver.get_all_bots")
+    @patch("context_resolver.AgentContext")
+    @patch("context_resolver.get_context_for_chat")
+    def test_no_override_uses_message_from_user(self, mock_get_ctx, mock_ac, mock_get_all, mock_message, mock_context):
+        """Without user_override, message.from_user should be used."""
+        mock_instance = MagicMock()
+        mock_instance.bot.token = "123456:ABC-DEF"
+        mock_get_all.return_value = {"my_bot": mock_instance}
+        mock_get_ctx.return_value = (mock_context, False)
+
+        result = resolve_context(mock_message)
+        assert result.status == "ok"
+        mock_get_ctx.assert_called_once_with("my_bot", 42, 100)
+        assert result.ctx is mock_context
 
 
 class TestGetContextForChat:

@@ -100,8 +100,11 @@ def mock_context():
 def mock_callback(mock_bot, mock_message):
     callback = MagicMock()
     callback.bot = mock_bot
-    callback.from_user.id = 42
+    callback.from_user.id = 42  # actual user who clicked
     callback.message = mock_message
+    # Override the message's from_user to simulate the bot's own message
+    # (the bot sent the keyboard, so callback.message.from_user ≠ callback.from_user)
+    callback.message.from_user.id = 999  # bot's user ID
     callback.data = "switch_project:project_a"
     callback.answer = AsyncMock()
     return callback

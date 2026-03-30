@@ -76,6 +76,23 @@ class TestHandleProjectCommand:
 
 class TestHandleProjectCallback:
     @patch("handlers.resolve_context")
+    async def test_passes_user_override_to_resolve_context(self, mock_resolve, mock_callback, mock_context):
+        """Callback handler must pass callback.from_user as user_override, not callback.message.from_user.
+
+        Regression test: callback.message.from_user is the BOT (who sent the keyboard),
+        but we need the actual user who clicked the button (callback.from_user).
+        """
+        mock_resolve.return_value = ContextResult(mock_context, "ok", "bot1")
+        mock_callback.data = f"{CALLBACK_PREFIX}project_a"
+        await handle_project_callback(mock_callback)
+        mock_resolve.assert_called_once()
+        call_kwargs = mock_resolve.call_args[1]
+        assert "user_override" in call_kwargs
+        assert call_kwargs["user_override"].id == 42  # callback.from_user.id
+        # Ensure it's NOT using callback.message.from_user.id (999 = bot)
+        assert call_kwargs["user_override"].id != 999
+
+    @patch("handlers.resolve_context")
     async def test_invalid_marker(self, mock_resolve, mock_callback):
         mock_callback.data = f"{CALLBACK_PREFIX}{INVALID_MARKER}"
         await handle_project_callback(mock_callback)
